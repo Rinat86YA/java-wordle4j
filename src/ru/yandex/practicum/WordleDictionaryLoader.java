@@ -31,6 +31,7 @@ public class WordleDictionaryLoader {
             while (word != null) {
                 word = word.trim();
                 word = word.toLowerCase();
+                word = word.replace("ё", "е");
                 if (word.length() == 5) {
                     words.add(word);
                 }

@@ -60,7 +60,8 @@ public class Wordle {
                     System.out.println();
                 }
                 if (!clue.equals("+++++")) {
-                    System.out.println("Попытки закончились. Вы не угадали слово.");
+                    System.out.println("Попытки закончились. Вы не угадали слово. Загаданное слово: "
+                            + wordleGame.getAnswer());
                 } else {
                     System.out.println("Слово угадано!");
                 }

@@ -4,7 +4,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /*
@@ -45,35 +47,55 @@ public class WordleDictionary {
         return result;
     }
 
+    public static String getClue(String answer, String suggestedWord) {
+        char[] clue = new char[answer.length()];
+        Map<Character, Integer> counts = new HashMap<>();
+
+        for (int i = 0; i < answer.length(); i++) {
+            if (answer.charAt(i) == suggestedWord.charAt(i)) {
+                clue[i] = '+';
+            } else {
+                char c = answer.charAt(i);
+                counts.put(c, counts.getOrDefault(c, 0) + 1);
+            }
+        }
+
+        for (int i = 0; i < answer.length(); i++) {
+            if (clue[i] == '+') {
+                continue;
+            }
+            char c = suggestedWord.charAt(i);
+            int count = counts.getOrDefault(c, 0);
+            if (count > 0) {
+                clue[i] = '^';
+                counts.put(c, count - 1);
+            } else {
+                clue[i] = '-';
+            }
+        }
+
+        return new String(clue);
+    }
+
     public void updateDependingOnClues(String suggestedWord, String clue) {
         try {
             if (clue.length() != 5) {
                 throw new InvalidClueFormatException();
             }
-            Set<String> toDelete = new HashSet<>();
-            for (String word : words) {
-                for (int i = 0; i < 5; i++) {
-                    if (clue.charAt(i) == '+') {
-                        if (suggestedWord.charAt(i) != word.charAt(i)) {
-                            toDelete.add(word);
-                        }
-                    } else if (clue.charAt(i) == '^') {
-                        if (!word.contains(String.valueOf(suggestedWord.charAt(i))) ||
-                                word.charAt(i) == suggestedWord.charAt(i)) {
-                            toDelete.add(word);
-                        }
-                    } else if (clue.charAt(i) == '-') {
-                        if (word.contains(String.valueOf(suggestedWord.charAt(i)))) {
-                            toDelete.add(word);
-                        }
-                    } else {
-                        throw new InvalidClueFormatException();
-                    }
+            for (int i = 0; i < clue.length(); i++) {
+                char c = clue.charAt(i);
+                if (c != '+' && c != '^' && c != '-') {
+                    throw new InvalidClueFormatException();
                 }
             }
-            for (String word : toDelete) {
-                words.remove(word);
+
+            Set<String> toDelete = new HashSet<>();
+            for (String word : words) {
+                if (!getClue(word, suggestedWord).equals(clue)) {
+                    toDelete.add(word);
+                }
             }
+            words.removeAll(toDelete);
         } catch (Exception e) {
             printWriter.println(e.getMessage());
         }
